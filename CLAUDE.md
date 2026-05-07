@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository status
 
-This repository currently contains product requirements only, not an implemented application. Do not invent build, lint, dev, or test commands until project files such as `package.json`, lockfiles, or workspace config exist.
+This repository contains a Next.js App Router foundation in `apps/web`, local PostgreSQL infrastructure in `infra/docker-compose.yml`, and product requirements in the PRD.
 
 ## Source of truth
 
@@ -13,9 +13,20 @@ This repository currently contains product requirements only, not an implemented
 
 ## Current commands
 
-No codebase commands exist yet.
+Run commands from the repository root.
 
-Before adding or running commands in future work, inspect current project files first. Expected commands after scaffolding will depend on chosen stack and package manager.
+- Install dependencies: `pnpm install`
+- Start local DB: `docker compose -f infra/docker-compose.yml up -d`
+- Run migrations: `pnpm db:migrate`
+- Seed database: `pnpm db:seed`
+- Start dev server: `pnpm dev`
+- Lint: `pnpm lint`
+- Typecheck: `pnpm typecheck`
+- Run tests: `pnpm test:run`
+- Run one test: `pnpm --filter @swanmail/web test:run <pattern>`
+- Build: `pnpm build`
+
+Local DB commands require Docker Desktop or another Docker daemon running.
 
 ## Product direction
 

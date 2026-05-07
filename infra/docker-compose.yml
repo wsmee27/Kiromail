@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: swanmail-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: swanmail
+      POSTGRES_PASSWORD: swanmail
+      POSTGRES_DB: swanmail
+    ports:
+      - "5432:5432"
+    volumes:
+      - swanmail-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U swanmail -d swanmail"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  swanmail-postgres-data:

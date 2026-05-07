@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  owner
+  admin
+  member
+}
+
+enum UserStatus {
+  active
+  invited
+  disabled
+}
+
+enum DomainStatus {
+  pending
+  verified
+  degraded
+  disabled
+}
+
+enum MailboxStatus {
+  active
+  inactive
+  disabled
+}
+
+enum AliasType {
+  custom
+  service
+  disposable
+  catch_all_generated
+}
+
+enum AliasStatus {
+  active
+  disabled
+  expired
+  quarantined
+}
+
+enum RoutingAction {
+  forward
+  quarantine
+  drop
+  worker
+  label
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  name          String?
+  passwordHash              String
+  twoFactorEnabled          Boolean        @default(false)
+  twoFactorSecretEncrypted  String?
+  twoFactorFailedAttempts   Int            @default(0)
+  twoFactorLockedUntil      DateTime?
+  role                      UserRole       @default(member)
+  status                    UserStatus     @default(active)
+  createdAt                 DateTime       @default(now())
+  updatedAt                 DateTime       @updatedAt
+
+  mailboxes     Mailbox[]
+  aliases       Alias[]        @relation("AliasCreator")
+  auditLogs     AuditLog[]
+  aiPreferences AiPreference[]
+}
+
+model Domain {
+  id           String         @id @default(cuid())
+  domain       String         @unique
+  provider     String
+  status       DomainStatus   @default(pending)
+  isPrimary    Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  mailboxes    Mailbox[]
+  aliases      Alias[]
+  routingRules RoutingRule[]
+}
+
+model Mailbox {
+  id               String         @id @default(cuid())
+  domainId         String
+  localPart        String
+  address          String         @unique
+  ownerUserId      String?
+  inboxDestination String?
+  sendEnabled      Boolean        @default(false)
+  receiveEnabled   Boolean        @default(true)
+  status           MailboxStatus  @default(active)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  domain           Domain         @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  owner            User?          @relation(fields: [ownerUserId], references: [id], onDelete: SetNull)
+  aliases          Alias[]
+  emailEvents      EmailEvent[]
+  aiPreferences    AiPreference[]
+
+  @@unique([domainId, localPart])
+}
+
+model Alias {
+  id                   String         @id @default(cuid())
+  domainId             String
+  localPart            String
+  address              String         @unique
+  destinationMailboxId String?
+  type                 AliasType      @default(custom)
+  status               AliasStatus    @default(active)
+  expiresAt            DateTime?
+  notes                String?
+  tags                 String[]       @default([])
+  createdById          String?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  domain               Domain         @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  destinationMailbox   Mailbox?       @relation(fields: [destinationMailboxId], references: [id], onDelete: SetNull)
+  createdBy            User?          @relation("AliasCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  routingRules         RoutingRule[]
+  emailEvents          EmailEvent[]
+
+  @@unique([domainId, localPart])
+}
+
+model RoutingRule {
+  id              String         @id @default(cuid())
+  domainId        String
+  aliasId         String?
+  action          RoutingAction
+  conditionJson   Json
+  destinationJson Json
+  priority        Int            @default(100)
+  enabled         Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  domain          Domain         @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  alias           Alias?         @relation(fields: [aliasId], references: [id], onDelete: SetNull)
+}
+
+model EmailEvent {
+  id          String    @id @default(cuid())
+  provider    String
+  eventType   String
+  messageId   String?
+  fromAddress String?
+  toAddress   String?
+  aliasId     String?
+  mailboxId   String?
+  subjectHash String?
+  metadata    Json      @default("{}")
+  createdAt   DateTime  @default(now())
+
+  alias       Alias?    @relation(fields: [aliasId], references: [id], onDelete: SetNull)
+  mailbox     Mailbox?  @relation(fields: [mailboxId], references: [id], onDelete: SetNull)
+}
+
+model AuditLog {
+  id           String    @id @default(cuid())
+  actorUserId  String?
+  action       String
+  resourceType String?
+  resourceId   String?
+  ipAddress    String?
+  userAgent    String?
+  metadata     Json      @default("{}")
+  createdAt    DateTime  @default(now())
+
+  actor        User?     @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+}
+
+model AiPreference {
+  id                   String    @id @default(cuid())
+  userId               String
+  mailboxId            String?
+  aiBodyAccess         Boolean   @default(false)
+  aiMetadataAccess     Boolean   @default(true)
+  dailyDigestEnabled   Boolean   @default(false)
+  phishingScoreEnabled Boolean   @default(false)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mailbox              Mailbox?  @relation(fields: [mailboxId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, mailboxId])
+}

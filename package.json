@@ -1,0 +1,17 @@
+{
+  "name": "swanmail",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "dev": "pnpm --filter @swanmail/web dev",
+    "build": "pnpm --filter @swanmail/web build",
+    "lint": "pnpm --filter @swanmail/web lint",
+    "typecheck": "pnpm --filter @swanmail/web typecheck",
+    "test": "pnpm --filter @swanmail/web test",
+    "test:run": "pnpm --filter @swanmail/web test:run",
+    "db:generate": "pnpm --filter @swanmail/web db:generate",
+    "db:migrate": "pnpm --filter @swanmail/web db:migrate",
+    "db:seed": "pnpm --filter @swanmail/web db:seed",
+    "db:studio": "pnpm --filter @swanmail/web db:studio"
+  }
+}
