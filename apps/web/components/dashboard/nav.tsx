@@ -25,6 +25,7 @@ export function DashboardNav() {
           <Link
             key={href}
             href={href}
+            aria-current={isActive ? "page" : undefined}
             className={[
               "group relative overflow-hidden rounded-2xl border px-3 py-2.5 text-sm transition",
               isActive
