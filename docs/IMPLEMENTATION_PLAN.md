@@ -5,6 +5,8 @@ This document tracks the execution of the SwanMail MVP based on the PRD and arch
 ## Current Status Overview
 The project is currently in the **Foundation & UI Scaffolding** stage. The database schema, authentication system, and frontend dashboard interfaces have been built. The application logic is currently operating on internal state (database) but is not yet synchronized with external email providers (Cloudflare / Mailtrap).
 
+> **Next steps are tracked in detail in `docs/superpowers/plans/2026-05-10-kiromail-improvement-roadmap.md`** — it contains the 5-sprint improvement roadmap (hardening, Cloudflare integration, Mailtrap + webhooks, worker/backup/invite, CI & deploy) plus the target file structure, flow diagrams, and acceptance criteria. Keep Phase 5+ checkboxes below in sync with that plan.
+
 ---
 
 ## ✅ Completed Phases
